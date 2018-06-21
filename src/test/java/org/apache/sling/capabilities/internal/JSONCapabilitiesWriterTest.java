@@ -73,4 +73,15 @@ public class JSONCapabilitiesWriterTest {
         
         assertEquals("Expecting 1 key at EXCEPTION", 1, json.getJsonObject("EXCEPTION").keySet().size());
    }
+
+    @Test(expected = DuplicateNamespaceException.class)
+    public void testDuplicateNamespace() throws IOException {
+        final List<CapabilitiesSource> sources = new ArrayList<>();
+        sources.add(new MockSource("duplicate", 1));
+        sources.add(new MockSource("another", 2));
+        sources.add(new MockSource("duplicate", 1));
+
+        final StringWriter w = new StringWriter();
+        new JSONCapabilitiesWriter().writeJson(w, sources);
+    }
 }

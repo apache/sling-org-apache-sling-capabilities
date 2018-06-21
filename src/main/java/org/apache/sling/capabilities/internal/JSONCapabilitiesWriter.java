@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.apache.felix.utils.json.JSONWriter;
 import org.apache.sling.capabilities.CapabilitiesSource;
 
@@ -33,6 +35,8 @@ class JSONCapabilitiesWriter {
     
     /** Write JSON to the supplied Writer, using the supplied sources */
     void writeJson(Writer w, Collection<CapabilitiesSource> sources) throws IOException {
+        final Set<String> namespaces = new HashSet<>();
+
         final JSONWriter jw = new JSONWriter(w);
         jw.object();
         jw.key(CAPS_KEY);
@@ -46,7 +50,14 @@ class JSONCapabilitiesWriter {
                 values = new HashMap<>();
                 values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());
             }
-            jw.key(s.getNamespace());
+
+            final String namespace = s.getNamespace();
+            if(namespaces.contains(namespace)) {
+              throw new DuplicateNamespaceException(namespace);
+            }
+            namespaces.add(namespace);
+
+            jw.key(namespace);
             jw.object();
             for(Map.Entry<String, Object> e : values.entrySet()) {
                 jw.key(e.getKey());
