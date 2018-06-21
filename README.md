@@ -12,6 +12,12 @@ by aggregating the output of all active `CapabilitiesSource` services.
 This can be easily expanded to multiple sets of Capabilities if needed later on,
 by changing the code to use service properties to group or tag the `CapabilitiesSource` services.
 
+These capabilities are _not_ the same as OSGi capabilities: they can be application-related, indicate
+the availability of external services, etc.
+
+CapabilitiesSource services
+----------------------------
+
 The tests provide simple `CapabilitiesSource` examples, that API is as follows:
 
     @ProviderType
@@ -28,6 +34,9 @@ The tests provide simple `CapabilitiesSource` examples, that API is as follows:
          */
         Map<String, Object> getCapabilities() throws Exception;
     }
+
+CapabilitiesServlet output
+--------------------------
 
 The `CapabilitiesServlet` produces output as in the example below, where two
 `CapabilitiesSource` services are available:
