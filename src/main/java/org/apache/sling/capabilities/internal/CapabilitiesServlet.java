@@ -36,7 +36,6 @@ import org.osgi.service.component.annotations.ReferencePolicyOption;
 property = {
     "sling.servlet.resourceTypes=sling/capabilities",
     "sling.servlet.methods=GET",
-    "sling.servlet.selectors=capabilities",
     "sling.servlet.extensions=json"
 })
 

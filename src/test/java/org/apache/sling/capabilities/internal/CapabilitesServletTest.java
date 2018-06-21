@@ -23,6 +23,7 @@ import java.io.StringReader;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
@@ -36,7 +37,11 @@ import org.junit.Test;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.apache.sling.testing.mock.sling.MockSling;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 
 /** Test the JSONCapabilitiesWriter */
 public class CapabilitesServletTest {
@@ -74,5 +79,19 @@ public class CapabilitesServletTest {
         final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
         assertEquals("VALUE_1_F", json.getJsonObject("F").getString("KEY_1_F"));
         assertEquals("VALUE_42_G", json.getJsonObject("G").getString("KEY_42_G"));
+    }
+    
+    @Test
+    public void verifyServiceProperties() throws ServletException, IOException, InvalidSyntaxException {
+        final ServiceRegistration reg = bundleContext.registerService(Servlet.class.getName(), servlet, null);
+        
+        try {
+            assertNotNull("Expecting a non-null ServiceRegistration", reg);
+            assertEquals("sling/capabilities", reg.getReference().getProperty("sling.servlet.resourceTypes"));
+            assertEquals("GET", reg.getReference().getProperty("sling.servlet.methods"));
+            assertEquals("json", reg.getReference().getProperty("sling.servlet.extensions"));
+        } finally {
+            reg.unregister();
+        }
     }
 }
