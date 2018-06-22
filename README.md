@@ -44,11 +44,11 @@ The `CapabilitiesServlet` produces output as in the example below, where two
     $ curl -s -u admin:admin http://localhost:8080/tmp/cap.json | jq .
     {
       "org.apache.sling.capabilities": {
-        "org.apache.sling.capabilities.internal.OsgiFrameworkCapabilitiesSource": {
+        "org.apache.sling.capabilities.osgi": {
           "framework.bundle.symbolic.name": "org.apache.felix.framework",
           "framework.bundle.version": "5.6.10"
         },
-        "org.apache.sling.capabilities.internal.JvmCapabilitiesSource": {
+        "org.apache.sling.capabilities.jvm": {
           "java.specification.version": "1.8",
           "java.vm.version": "25.171-b11",
           "java.vm.vendor": "Oracle Corporation"
