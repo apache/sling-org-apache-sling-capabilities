@@ -23,7 +23,6 @@ import java.util.Map;
 import javax.servlet.Servlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -32,6 +31,10 @@ import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
+/** Default CapabilitiesSource that provides information on available Sling
+ *  Servlets, exposing their sling.servlet.* properties so that clients can
+ *  find out which behaviors are available.
+ */
 @Component(service = CapabilitiesSource.class)
 @Designate(
     ocd = SlingServletsSource.Config.class,
