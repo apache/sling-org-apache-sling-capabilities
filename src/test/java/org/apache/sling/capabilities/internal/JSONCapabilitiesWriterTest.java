@@ -44,7 +44,7 @@ public class JSONCapabilitiesWriterTest {
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
-        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
+        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY).getJsonObject("data");
         assertEquals("VALUE_0_A", json.getJsonObject("A").getString("KEY_0_A"));
         assertEquals("VALUE_1_A", json.getJsonObject("A").getString("KEY_1_A"));
         assertEquals("VALUE_0_B", json.getJsonObject("B").getString("KEY_0_B"));
@@ -66,7 +66,7 @@ public class JSONCapabilitiesWriterTest {
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
-        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
+        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY).getJsonObject("data");
         assertEquals("VALUE_0_A", json.getJsonObject("A").getString("KEY_0_A"));
         assertEquals("java.lang.IllegalArgumentException:Simulating a problem", json.getJsonObject("EXCEPTION").getString("_EXCEPTION_"));
         assertEquals("VALUE_0_B", json.getJsonObject("B").getString("KEY_0_B"));

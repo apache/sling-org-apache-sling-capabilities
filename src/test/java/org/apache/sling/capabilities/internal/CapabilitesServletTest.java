@@ -75,7 +75,7 @@ public class CapabilitesServletTest {
         // the JSON format details are tested elsewhere
         final JsonReader r = Json.createReader(new StringReader(resp.getOutputAsString()));
         final JsonObject rootJson = r.readObject();
-        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY);
+        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY).getJsonObject("data");
         assertEquals("VALUE_1_F", json.getJsonObject("F").getString("KEY_1_F"));
         assertEquals("VALUE_42_G", json.getJsonObject("G").getString("KEY_42_G"));
     }

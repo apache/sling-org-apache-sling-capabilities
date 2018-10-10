@@ -32,6 +32,7 @@ import org.apache.sling.capabilities.CapabilitiesSource;
 class JSONCapabilitiesWriter {
 
     static final String CAPS_KEY = "org.apache.sling.capabilities";
+    static final String DATA_KEY = "data";
     
     /** Write JSON to the supplied Writer, using the supplied sources */
     void writeJson(Writer w, Collection<CapabilitiesSource> sources) throws IOException {
@@ -40,6 +41,8 @@ class JSONCapabilitiesWriter {
         final JSONWriter jw = new JSONWriter(w);
         jw.object();
         jw.key(CAPS_KEY);
+        jw.object();
+        jw.key(DATA_KEY);
         jw.object();
         
         Map<String, Object> values = null;
@@ -66,6 +69,7 @@ class JSONCapabilitiesWriter {
             jw.endObject();
         }
         
+        jw.endObject();
         jw.endObject();
         jw.endObject();
     }
