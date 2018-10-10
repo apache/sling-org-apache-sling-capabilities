@@ -20,6 +20,7 @@ package org.apache.sling.capabilities.internal;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -38,23 +39,27 @@ property = {
     "sling.servlet.methods=GET",
     "sling.servlet.extensions=json"
 })
-
 public class CapabilitiesServlet extends SlingSafeMethodsServlet {
     
-    @Reference(
-        policy=ReferencePolicy.DYNAMIC,
-        cardinality=ReferenceCardinality.AT_LEAST_ONE, 
-        policyOption=ReferencePolicyOption.GREEDY)
-    volatile List<CapabilitiesSource> sources;
+    private final List<CapabilitiesSource> sources = new CopyOnWriteArrayList<>();
 
-    CapabilitiesServlet() {
-    }
-    
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         new JSONCapabilitiesWriter().writeJson(response.getWriter(), sources);
         response.getWriter().flush();
+    }
+
+    @Reference(
+        policy=ReferencePolicy.DYNAMIC,
+        cardinality=ReferenceCardinality.AT_LEAST_ONE,
+        policyOption=ReferencePolicyOption.GREEDY)
+    protected void bindSource(CapabilitiesSource src) {
+        sources.add(src);
+    }
+
+    protected void unbindSource(CapabilitiesSource src) {
+        sources.remove(src);
     }
 }
