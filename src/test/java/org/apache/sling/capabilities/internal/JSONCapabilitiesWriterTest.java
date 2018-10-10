@@ -33,6 +33,8 @@ import org.junit.Test;
 /** Test the JSONCapabilitiesWriter */
 public class JSONCapabilitiesWriterTest {
 
+    private final RegexFilter namespaceFilter = new RegexFilter(".*");
+    
     @Test
     public void testWithTwoSources() throws IOException {
         final List<CapabilitiesSource> sources = new ArrayList<>();
@@ -40,7 +42,7 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources);
+        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
@@ -62,7 +64,7 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources);
+        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
@@ -82,6 +84,6 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("duplicate", 1));
 
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources);
+        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
     }
 }

@@ -20,13 +20,16 @@ package org.apache.sling.capabilities.internal;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import org.apache.sling.servlethelpers.MockSlingHttpServletRequest;
 import org.apache.sling.servlethelpers.MockSlingHttpServletResponse;
@@ -36,40 +39,77 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.apache.sling.testing.mock.sling.MockSling;
+import org.apache.sling.testing.resourceresolver.MockResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /** Test the JSONCapabilitiesWriter */
 public class CapabilitesServletTest {
 
-    private SlingSafeMethodsServlet servlet;
+    private CapabilitiesServlet servlet;
 
     @Rule
     public final OsgiContext context = new OsgiContext();
     
     private BundleContext bundleContext;
     
+    private static final String [] AUTHORIZED_PATHS_PATTERNS = {
+        ".*/ok$",
+        "/var/.*"
+    };
+    
+    private static final String [] NAMESPACE_PATTERNS = {
+        ".*"
+    };
+    
     @Before
-    public void setup() {
+    public void setup() throws IOException {
+        
+        // Configure allowed path patterns
+        final ConfigurationAdmin ca = context.getService(ConfigurationAdmin.class);
+        assertNotNull("Expecting a ConfigurationAdmin service", ca);
+        final Configuration cfg = ca.getConfiguration(CapabilitiesServlet.class.getName());
+        final Dictionary<String, Object> props = new Hashtable<>();
+        props.put("resourcePathPatterns", AUTHORIZED_PATHS_PATTERNS);
+        cfg.update(props);
+        
         servlet = new CapabilitiesServlet();
         bundleContext = MockOsgi.newBundleContext();
         
-        bundleContext.registerService(CapabilitiesSource.class.getName(), new MockSource("F", 2), null);
-        bundleContext.registerService(CapabilitiesSource.class.getName(), new MockSource("G", 43), null);
-        
-        MockOsgi.injectServices(servlet, bundleContext);
+        final CapabilitiesSource [] sources = {
+            new MockSource("F", 2),
+            new MockSource("G", 43)
+        };
+        for(CapabilitiesSource src : sources) {
+            // Not sure why both are needed, but tests fails otherwise
+            context.registerService(src);
+            servlet.bindSource(src);
+        }
+        context.registerInjectActivateService(servlet);
+    }
+    
+    private MockSlingHttpServletRequest requestFor(ResourceResolver resolver, String path) {
+        final MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resolver);
+        final Map<String, Object> props = new HashMap<>();
+        props.put(CapabilitiesServlet.NAMESPACES_PROP, NAMESPACE_PATTERNS);
+        final MockResource res = new MockResource(path, props, resolver);
+        req.setResource(res);
+        return req;
     }
     
     @Test
     public void testServlet() throws ServletException, IOException {
         final ResourceResolver resolver = MockSling.newResourceResolver(bundleContext);
-        MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resolver);
         MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
         
-        servlet.service(req, resp);
+        servlet.service(requestFor(resolver, "/var/somewhere"), resp);
+        
+        assertEquals(200, resp.getStatus());
 
         // Just verify that both sources are taken into account
         // the JSON format details are tested elsewhere

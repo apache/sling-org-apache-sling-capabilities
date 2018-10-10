@@ -35,7 +35,7 @@ class JSONCapabilitiesWriter {
     static final String DATA_KEY = "data";
     
     /** Write JSON to the supplied Writer, using the supplied sources */
-    void writeJson(Writer w, Collection<CapabilitiesSource> sources) throws IOException {
+    void writeJson(Writer w, Collection<CapabilitiesSource> sources, RegexFilter namespacePatterns) throws IOException {
         final Set<String> namespaces = new HashSet<>();
 
         final JSONWriter jw = new JSONWriter(w);
@@ -47,18 +47,22 @@ class JSONCapabilitiesWriter {
         
         Map<String, Object> values = null;
         for(CapabilitiesSource s : sources) {
+            
+            final String namespace = s.getNamespace();
+            if(!namespacePatterns.accept(namespace)) {
+                continue;
+            }
+            if(namespaces.contains(namespace)) {
+              throw new DuplicateNamespaceException(namespace);
+            }
+            namespaces.add(namespace);
+            
             try {
                 values = s.getCapabilities();
             } catch(Exception e) {
                 values = new HashMap<>();
                 values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());
             }
-
-            final String namespace = s.getNamespace();
-            if(namespaces.contains(namespace)) {
-              throw new DuplicateNamespaceException(namespace);
-            }
-            namespaces.add(namespace);
 
             jw.key(namespace);
             jw.object();
