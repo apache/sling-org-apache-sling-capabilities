@@ -41,6 +41,7 @@ import org.apache.sling.testing.mock.osgi.junit.OsgiContext;
 import org.apache.sling.testing.mock.sling.MockSling;
 import org.apache.sling.testing.resourceresolver.MockResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -57,16 +58,24 @@ public class CapabilitesServletTest {
     public final OsgiContext context = new OsgiContext();
     
     private BundleContext bundleContext;
+    private ResourceResolver resourceResolver;
     
+    // The CapabilitiesServlet must reject resource paths which are outside of this
     private static final String [] AUTHORIZED_PATHS_PATTERNS = {
         ".*/ok$",
         "/var/.*"
     };
     
+    // The CapabilitiesServlet must omit capabilities outside of these namespaces
     private static final String [] NAMESPACE_PATTERNS = {
-        ".*"
+        "[EF]",
+        "G"
     };
     
+    private final String DENIED_PATH = "/denied";
+    private final String OK_PATH = "/denied/but/ok";
+    private final String VAR_PATH = "/var/something";
+
     @Before
     public void setup() throws IOException {
         
@@ -80,10 +89,13 @@ public class CapabilitesServletTest {
         
         servlet = new CapabilitiesServlet();
         bundleContext = MockOsgi.newBundleContext();
+        resourceResolver = MockSling.newResourceResolver(bundleContext);
+
         
         final CapabilitiesSource [] sources = {
             new MockSource("F", 2),
-            new MockSource("G", 43)
+            new MockSource("G", 43),
+            new MockSource("X", 45)
         };
         for(CapabilitiesSource src : sources) {
             // Not sure why both are needed, but tests fails otherwise
@@ -93,22 +105,42 @@ public class CapabilitesServletTest {
         context.registerInjectActivateService(servlet);
     }
     
-    private MockSlingHttpServletRequest requestFor(ResourceResolver resolver, String path) {
-        final MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resolver);
+    private MockSlingHttpServletRequest requestFor(String path, boolean withNamespacePatterns) {
+        final MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resourceResolver);
         final Map<String, Object> props = new HashMap<>();
-        props.put(CapabilitiesServlet.NAMESPACES_PROP, NAMESPACE_PATTERNS);
-        final MockResource res = new MockResource(path, props, resolver);
+        if(withNamespacePatterns) {
+            props.put(CapabilitiesServlet.NAMESPACES_PROP, NAMESPACE_PATTERNS);
+        }
+        final MockResource res = new MockResource(path, props, resourceResolver);
         req.setResource(res);
         return req;
     }
     
     @Test
-    public void testServlet() throws ServletException, IOException {
-        final ResourceResolver resolver = MockSling.newResourceResolver(bundleContext);
+    public void testDeniedPath() throws ServletException, IOException {
         MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
-        
-        servlet.service(requestFor(resolver, "/var/somewhere"), resp);
-        
+        servlet.service(requestFor(DENIED_PATH, true), resp);
+        assertEquals(403, resp.getStatus());
+    }
+
+    @Test
+    public void testOkPath() throws ServletException, IOException {
+        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
+        servlet.service(requestFor(OK_PATH, true), resp);
+        assertEquals(200, resp.getStatus());
+    }
+
+    @Test
+    public void testMissingNamespaceProperty() throws ServletException, IOException {
+        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
+        servlet.service(requestFor(OK_PATH, false), resp);
+        assertEquals(403, resp.getStatus());
+    }
+
+    @Test
+    public void testServletResponse() throws ServletException, IOException {
+        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
+        servlet.service(requestFor(VAR_PATH, true), resp);
         assertEquals(200, resp.getStatus());
 
         // Just verify that both sources are taken into account
@@ -118,6 +150,7 @@ public class CapabilitesServletTest {
         final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY).getJsonObject("data");
         assertEquals("VALUE_1_F", json.getJsonObject("F").getString("KEY_1_F"));
         assertEquals("VALUE_42_G", json.getJsonObject("G").getString("KEY_42_G"));
+        assertFalse("Expected X namespace to be omitted", json.containsKey("X"));
     }
     
     @Test
