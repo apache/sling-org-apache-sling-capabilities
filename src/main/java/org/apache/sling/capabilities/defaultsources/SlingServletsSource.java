@@ -84,7 +84,7 @@ public class SlingServletsSource implements CapabilitiesSource {
         final ServiceReference [] refs = bundleContext.getServiceReferences(Servlet.class.getName(), ldapFilter);
         if(refs != null) {
             for(ServiceReference ref : refs) {
-                result.put(classOf(ref), getCapabilities(ref));
+                result.put(uniqueKey(ref), getCapabilities(ref));
             }
         }
         return result;
@@ -115,12 +115,16 @@ public class SlingServletsSource implements CapabilitiesSource {
         return result;
     }
     
-    private String classOf(ServiceReference ref) {
+    /** Compute a somewhat representative unique key for ref */
+    private String uniqueKey(ServiceReference ref) {
+        final StringBuilder result = new StringBuilder();
         final Object service = bundleContext.getService(ref);
         try {
-            return service.getClass().getName();
+            result.append(service.getClass().getSimpleName());
+            result.append("_").append(service.hashCode());
         } finally {
             bundleContext.ungetService(ref);
         }
+        return result.toString();
     }
 }
