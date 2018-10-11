@@ -103,7 +103,7 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
 
     @Reference(
         policy=ReferencePolicy.DYNAMIC,
-        cardinality=ReferenceCardinality.OPTIONAL,
+        cardinality=ReferenceCardinality.MULTIPLE,
         policyOption=ReferencePolicyOption.GREEDY)
     void bindSource(CapabilitiesSource src) {
         sources.add(src);
