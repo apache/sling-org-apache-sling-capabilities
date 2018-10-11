@@ -71,6 +71,11 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
     }
     
     @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + sources.size() + " " + CapabilitiesSource.class.getSimpleName() + " active";
+    }
+
+    @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         
         // Resource Path must match a configurable set of patterns, to prevent

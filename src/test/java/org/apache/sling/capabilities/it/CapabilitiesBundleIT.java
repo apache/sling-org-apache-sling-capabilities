@@ -20,9 +20,11 @@ package org.apache.sling.capabilities.it;
 
 import java.util.Map;
 import javax.inject.Inject;
+import javax.servlet.Servlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +33,8 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 
 @RunWith(PaxExam.class)
@@ -41,6 +45,11 @@ public class CapabilitiesBundleIT extends CapabilitiesTestSupport {
     private BundleContext bundleContext;
     
     private Bundle testBundle;
+
+    private static class TestCapabilitiesSource implements CapabilitiesSource {
+        public String getNamespace() { return null; }
+        public Map<String, Object> getCapabilities() { return null; }
+    };
 
     @Before
     public void setup() {
@@ -61,16 +70,28 @@ public class CapabilitiesBundleIT extends CapabilitiesTestSupport {
     }
     
     @Test
-    public void testRegisterSource() {
+    public void testRegisterSources() throws InvalidSyntaxException {
         // Verify that the bundle setup (exported packages) allows us to 
         // register a source from the outside
-        final CapabilitiesSource src = new CapabilitiesSource() {
-            public String getNamespace() { return null; }
-            public Map<String, Object> getCapabilities() { return null; }
-        };
+        final ServiceRegistration [] reg = new ServiceRegistration[3];
+        for(int i=0 ; i < reg.length; i++) {
+            reg[i] = bundleContext.registerService(CapabilitiesSource.class.getName(), new TestCapabilitiesSource(), null);
+            assertNotNull("Expecting ServiceRegistration", reg[i]);
+        }
         
-        final ServiceRegistration reg = bundleContext.registerService(CapabilitiesSource.class.getName(), src, null);
-        assertNotNull("Expecting ServiceRegistration", reg);
-        reg.unregister();
+        try {
+            // Now check that all sources are registered
+            // using toString() trick from CapabilitiesServlet
+            final String expected = reg.length + " CapabilitiesSource";
+            final ServiceReference[] refs =  bundleContext.getServiceReferences(Servlet.class.getName(), "(sling.servlet.resourceTypes=sling/capabilities)");
+            assertTrue("Expecting a single Servlet service", refs != null && refs.length == 1);
+            final String str = bundleContext.getService(refs[0]).toString();
+            assertTrue("Expecting " + expected + " but got " + str, str.contains(expected));
+            bundleContext.ungetService(refs[0]);
+        } finally {
+            for(int i=0 ; i < reg.length; i++) {
+                reg[i].unregister();
+            }
+        }
     }
 }
