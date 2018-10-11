@@ -49,7 +49,6 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
-/** Test the JSONCapabilitiesWriter */
 public class CapabilitesServletTest {
 
     private CapabilitiesServlet servlet;
