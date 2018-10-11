@@ -86,7 +86,6 @@ public class SlingServletsSourceTest {
 
         final Map<String, Object> caps = src.getCapabilities();
         assertNotNull("Expecting to get Capabilities", caps);
-        System.err.println(caps);
 
         assertEquals("Expecting capabilities for 2 json servlets", 2, caps.size());
 
