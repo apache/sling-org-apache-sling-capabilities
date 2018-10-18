@@ -73,21 +73,21 @@ below:
       "org.apache.sling.capabilities": {
         "data": {
           "org.apache.sling.servlets.testA": {
-            "GetAclServlet_23102540": {
+            "GetAclServlet_89b2e8f3": {
               "sling.servlet.extensions": "json",
+              "sling.servlet.methods": "GET",
+              "sling.servlet.resourceTypes": "sling/servlet/default",
               "sling.servlet.selectors": [
                 "acl",
                 "tidy.acl"
-              ],
-              "sling.servlet.resourceTypes": "sling/servlet/default",
-              "sling.servlet.methods": "GET"
+              ]
             }
           },
           "org.apache.sling.servlets.testB": {
-            "ChangeUserPasswordServlet_2134633768": {
-              "sling.servlet.selectors": "changePassword",
+            "ChangeUserPasswordServlet_458ad2ce": {
+              "sling.servlet.methods": "POST",
               "sling.servlet.resourceTypes": "sling/user",
-              "sling.servlet.methods": "POST"
+              "sling.servlet.selectors": "changePassword"
             }
           }
         }
