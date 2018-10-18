@@ -65,7 +65,7 @@ This module does not provide any active `CapabilitiesSource` out of the box, but
 `sling.servlet.*` properties for reference.
 
 With the example configuration below a `sling/capabilities` resource with 
-`namespace_patterns='servlets\.[A|B]'` and a path that matches `/var/capabilities/.*`
+`namespace_patterns='org\.apache\.sling\.servlets\.test[A|B]'` and a path that matches `/var/capabilities/.*`
 produces the following output at `/var/capabilities/caps.json` with the resource shown 
 below:
 
