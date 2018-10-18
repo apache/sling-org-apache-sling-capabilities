@@ -20,6 +20,7 @@ package org.apache.sling.capabilities.defaultsources;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.servlet.Servlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import org.osgi.framework.BundleContext;
@@ -87,14 +88,15 @@ public class SlingServletsSource implements CapabilitiesSource {
         final ServiceReference [] refs = bundleContext.getServiceReferences(Servlet.class.getName(), ldapFilter);
         if(refs != null) {
             for(ServiceReference ref : refs) {
-                result.put(uniqueKey(ref), getCapabilities(ref));
+                final TreeMap<String, Object> caps = getCapabilities(ref);
+                result.put(uniqueKey(ref, caps), caps);
             }
         }
         return result;
     }
     
-    private static Map<String, Object> getCapabilities(ServiceReference ref) {
-        final Map<String, Object> result = new HashMap<>();
+    private static TreeMap<String, Object> getCapabilities(ServiceReference ref) {
+        final TreeMap<String, Object> result = new TreeMap<>();
         for(String key : ref.getPropertyKeys()) {
             if(key.startsWith(SLING_SERVLET_PROPERTY_PREFIX)) {
                 final Object value = ref.getProperty(key);
@@ -118,13 +120,13 @@ public class SlingServletsSource implements CapabilitiesSource {
         return result;
     }
     
-    /** Compute a somewhat representative unique key for ref */
-    private String uniqueKey(ServiceReference ref) {
+    /** Compute a somewhat representative but stable unique key for ref */
+    private String uniqueKey(ServiceReference ref, TreeMap<String, Object> caps) {
         final StringBuilder result = new StringBuilder();
         final Object service = bundleContext.getService(ref);
         try {
             result.append(service.getClass().getSimpleName());
-            result.append("_").append(service.hashCode());
+            result.append("_").append(Integer.toHexString(caps.toString().hashCode()));
         } finally {
             bundleContext.ungetService(ref);
         }

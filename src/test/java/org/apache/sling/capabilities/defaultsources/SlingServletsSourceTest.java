@@ -89,9 +89,9 @@ public class SlingServletsSourceTest {
         assertNotNull("Expecting to get Capabilities", caps);
         assertEquals("Expecting capabilities for 2 json servlets", 2, caps.size());
 
-        final Pattern keyPattern = Pattern.compile("MockServlet_[0-9]+");
+        final Pattern keyPattern = Pattern.compile("MockServlet_(d363c188|d363b664)");
         for(String key : caps.keySet()) {
-            assertTrue("Expecting key " + key + " to match", keyPattern.matcher(key).matches());
+            assertTrue("Expecting key " + key + " to match " + keyPattern, keyPattern.matcher(key).matches());
         }
 
         for(Object o: caps.values()) {
