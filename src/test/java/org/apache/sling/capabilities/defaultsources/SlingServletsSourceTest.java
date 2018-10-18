@@ -64,7 +64,7 @@ public class SlingServletsSourceTest {
         assertNotNull("Expecting a ConfigurationAdmin service", ca);
         final Configuration cfg = ca.getConfiguration(SlingServletsSource.class.getName());
         final Dictionary<String, Object> props = new Hashtable<>();
-        props.put("capabilitiesNamespace", "TEST_NS");
+        props.put("capabilitiesNamespaceSuffix", "TEST_NS");
         props.put("servletsLdapFilter", "(sling.servlet.extensions=json)");
         cfg.update(props);
 
@@ -83,10 +83,10 @@ public class SlingServletsSourceTest {
     public void testServletsSource() throws Exception {
         final CapabilitiesSource src = context.getService(CapabilitiesSource.class);
         assertNotNull("Expecting a CapabilitiesSource", src);
+        assertEquals("Expecting namespace to match", "org.apache.sling.servlets.TEST_NS", src.getNamespace());
 
         final Map<String, Object> caps = src.getCapabilities();
         assertNotNull("Expecting to get Capabilities", caps);
-
         assertEquals("Expecting capabilities for 2 json servlets", 2, caps.size());
 
         final Pattern keyPattern = Pattern.compile("MockServlet_[0-9]+");

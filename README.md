@@ -66,12 +66,13 @@ This module does not provide any active `CapabilitiesSource` out of the box, but
 
 With the example configuration below a `sling/capabilities` resource with 
 `namespace_patterns='servlets\.[A|B]'` and a path that matches `/var/capabilities/.*`
-produces the following output:
+produces the following output at `/var/capabilities/caps.json` with the resource shown 
+below:
 
     {
       "org.apache.sling.capabilities": {
         "data": {
-          "servlets.A": {
+          "org.apache.sling.servlets.testA": {
             "GetAclServlet_23102540": {
               "sling.servlet.extensions": "json",
               "sling.servlet.selectors": [
@@ -82,7 +83,7 @@ produces the following output:
               "sling.servlet.methods": "GET"
             }
           },
-          "servlets.B": {
+          "org.apache.sling.servlets.testB": {
             "ChangeUserPasswordServlet_2134633768": {
               "sling.servlet.selectors": "changePassword",
               "sling.servlet.resourceTypes": "sling/user",
@@ -93,28 +94,28 @@ produces the following output:
       }
     }
 
-The configured `servlets.C` namespace is omitted due to the `namespace_patterns` property.
+The configured `testC` namespace is omitted due to the `namespace_patterns` property of the resource shown below.
 
 Here's the required configuration, excerpted from `/system/console/status-Configurations`:
 
     PID = org.apache.sling.capabilities.internal.CapabilitiesServlet
     resourcePathPatterns = [/var/capabilities/.*]
-    
-    Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-    capabilitiesNamespace = servlets.A
-    servletsLdapFilter = (&(sling.servlet.extensions=json)(sling.servlet.selectors=acl))
-    
-    Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-    capabilitiesNamespace = servlets.B
-    servletsLdapFilter = (&(sling.servlet.resourceTypes=sling/user)(sling.servlet.selectors=changePassword))
 
-    Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-    capabilitiesNamespace = servlets.C
-    servletsLdapFilter = (sling.servlet.extensions=html)
+	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
+	capabilitiesNamespaceSuffix = testA
+	servletsLdapFilter = (&(sling.servlet.extensions=json)(sling.servlet.selectors=acl))    
+	
+	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
+	capabilitiesNamespaceSuffix = testB
+	servletsLdapFilter = (&(sling.servlet.resourceTypes=sling/user)(sling.servlet.selectors=changePassword))
+
+	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
+	capabilitiesNamespaceSuffix = testC
+	servletsLdapFilter = (sling.servlet.extensions=html)
 
 And a resource that then generates the above output can be created with
 
     curl -u admin:admin \
       -Fsling:resourceType=sling/capabilities \
-      -Fnamespace_patterns='servlets\.[A|B]' \
+      -Fnamespace_patterns='org\.apache\.sling\.servlets\.test[A|B]' \
       http://localhost:8080/var/capabilities/caps

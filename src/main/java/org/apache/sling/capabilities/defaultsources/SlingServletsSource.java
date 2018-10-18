@@ -54,10 +54,12 @@ public class SlingServletsSource implements CapabilitiesSource {
         String servletsLdapFilter() default "";
         
         @AttributeDefinition(
-            name = "Capabilities Namespace",
-            description = "Unique namespace that identifies this set of capabilities"
+            name = "Capabilities Namespace Suffix",
+            description = "Unique namespace suffix that identifies this set of capabilities."
+                + " Will be prefixed with '" + NAMESPACE_PREFIX
+                + "' to compute the actual capabilities namespace"
         )
-        String capabilitiesNamespace();
+        String capabilitiesNamespaceSuffix();
     }
     
     private String namespace;
@@ -65,11 +67,12 @@ public class SlingServletsSource implements CapabilitiesSource {
     private BundleContext bundleContext;
     
     private static final String SLING_SERVLET_PROPERTY_PREFIX = "sling.servlet.";
+    public static final String NAMESPACE_PREFIX = "org.apache.sling.servlets.";
     
     @Activate
     public void activate(Config cfg, ComponentContext ctx) {
         this.bundleContext = ctx.getBundleContext();
-        this.namespace = cfg.capabilitiesNamespace();
+        this.namespace = NAMESPACE_PREFIX + cfg.capabilitiesNamespaceSuffix();
         this.ldapFilter = cfg.servletsLdapFilter();
     }
 
