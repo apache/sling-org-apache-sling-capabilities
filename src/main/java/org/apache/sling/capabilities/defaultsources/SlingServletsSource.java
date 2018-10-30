@@ -109,7 +109,7 @@ public class SlingServletsSource implements CapabilitiesSource {
     }
     
     /** Convert input to a single value if it's an array of size one */
-    private static Object maybeConvertToSingleValue(Object input) {
+    static Object maybeConvertToSingleValue(Object input) {
         Object result = input;
         if(input instanceof Object[]) {
             Object[] arr = (Object[])input;

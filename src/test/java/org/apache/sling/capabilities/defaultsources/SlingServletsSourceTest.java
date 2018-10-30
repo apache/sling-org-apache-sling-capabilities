@@ -102,4 +102,11 @@ public class SlingServletsSourceTest {
             assertTrue("Expecting id=12 or 41", id.equals("12") || id.equals("41"));
         }
     }
+    
+    @Test
+    public void testMaybeConvertToSingleValue() {
+        final Integer [] single = { 42 };
+        final Object result = SlingServletsSource.maybeConvertToSingleValue(single);
+        assertTrue(result instanceof Integer);
+    }
 }

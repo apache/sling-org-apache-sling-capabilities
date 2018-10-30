@@ -85,7 +85,9 @@ public class CapabilitiesBundleIT extends CapabilitiesTestSupport {
             final String expected = reg.length + " CapabilitiesSource";
             final ServiceReference[] refs =  bundleContext.getServiceReferences(Servlet.class.getName(), "(sling.servlet.resourceTypes=sling/capabilities)");
             assertTrue("Expecting a single Servlet service", refs != null && refs.length == 1);
-            final String str = bundleContext.getService(refs[0]).toString();
+            final Object svc = bundleContext.getService(refs[0]);
+            assertNotNull("Expecting a service", svc);
+            final String str = svc.toString();
             assertTrue("Expecting " + expected + " but got " + str, str.contains(expected));
             bundleContext.ungetService(refs[0]);
         } finally {

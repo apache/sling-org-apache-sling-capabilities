@@ -31,6 +31,12 @@ public class RegexFilterTest {
     }
     
     @Test
+    public void testNullPatternList() {
+        RegexFilter f = new RegexFilter((String[])null);
+        assertFalse(f.accept("meu"));
+    }
+
+    @Test
     public void testTwoStrings() {
         RegexFilter f = new RegexFilter("zo", "meu");
         assertFalse(f.accept("gabu"));

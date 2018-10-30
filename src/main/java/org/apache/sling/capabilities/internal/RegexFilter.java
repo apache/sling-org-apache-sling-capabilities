@@ -28,7 +28,7 @@ class RegexFilter {
     private final Pattern [] patterns;
     
     RegexFilter(String ... regexp) {
-        if(regexp == null || regexp.length == 0) {
+        if(regexp == null) {
             patterns = new Pattern[0];
         } else {
             patterns = new Pattern[regexp.length];

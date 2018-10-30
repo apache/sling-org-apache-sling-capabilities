@@ -43,6 +43,7 @@ import org.apache.sling.testing.resourceresolver.MockResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceRegistration;
@@ -75,6 +76,12 @@ public class CapabilitesServletTest {
     private final String OK_PATH = "/denied/but/ok";
     private final String VAR_PATH = "/var/something";
 
+    private static final CapabilitiesSource [] SOURCES = {
+        new MockSource("F", 2),
+        new MockSource("G", 43),
+        new MockSource("X", 45)
+    };
+
     @Before
     public void setup() throws IOException {
         
@@ -91,16 +98,12 @@ public class CapabilitesServletTest {
         resourceResolver = MockSling.newResourceResolver(bundleContext);
 
         
-        final CapabilitiesSource [] sources = {
-            new MockSource("F", 2),
-            new MockSource("G", 43),
-            new MockSource("X", 45)
-        };
-        for(CapabilitiesSource src : sources) {
+        for(CapabilitiesSource src : SOURCES) {
             // Not sure why both are needed, but tests fails otherwise
             context.registerService(src);
             servlet.bindSource(src);
         }
+
         context.registerInjectActivateService(servlet);
     }
     
@@ -115,6 +118,19 @@ public class CapabilitesServletTest {
         return req;
     }
     
+    @Test
+    public void testToStringProvidesTestingInfo() {
+        final String expected = SOURCES.length + " " + CapabilitiesSource.class.getSimpleName();
+        assertTrue("Expecting toString to indicate number of sources", servlet.toString().contains(expected));
+    }
+
+    @Test
+    public void testUnbind() {
+        servlet.unbindSource(SOURCES[0]);
+        final String expected = (SOURCES.length - 1) + " " + CapabilitiesSource.class.getSimpleName();
+        assertTrue("Expecting one source to be removed", servlet.toString().contains(expected));
+    }
+
     @Test
     public void testDeniedPath() throws ServletException, IOException {
         MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
