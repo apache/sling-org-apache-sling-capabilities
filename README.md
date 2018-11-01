@@ -17,6 +17,8 @@ resource tree, as well as which `CapabilitiesSource` services are considered by 
 
 The example configuration below shows the JSON vocabulary used to expose capabilities.
 
+For now, we have one module which provides a `CapabilitiesSource`, that's the [sling-org-apache-sling-capabilities-jcr](https://github.com/apache/sling-org-apache-sling-capabilities-jcr) module which provides information on the JCR repository.
+
 CapabilitiesSource services
 ----------------------------
 
