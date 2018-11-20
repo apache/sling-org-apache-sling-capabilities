@@ -85,7 +85,7 @@ public class SlingServletsSourceTest {
         assertNotNull("Expecting a CapabilitiesSource", src);
         assertEquals("Expecting namespace to match", "org.apache.sling.servlets.TEST_NS", src.getNamespace());
 
-        final Map<String, Object> caps = src.getCapabilities();
+        final Map<String, Object> caps = src.getCapabilities(null);
         assertNotNull("Expecting to get Capabilities", caps);
         assertEquals("Expecting capabilities for 2 json servlets", 2, caps.size());
 

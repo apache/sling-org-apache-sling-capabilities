@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.apache.felix.utils.json.JSONWriter;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.capabilities.CapabilitiesSource;
 
 /** Create the JSON output of our servlet */
@@ -35,7 +36,7 @@ class JSONCapabilitiesWriter {
     static final String DATA_KEY = "data";
     
     /** Write JSON to the supplied Writer, using the supplied sources */
-    void writeJson(Writer w, Collection<CapabilitiesSource> sources, RegexFilter namespacePatterns) throws IOException {
+    void writeJson(ResourceResolver resolver, Writer w, Collection<CapabilitiesSource> sources, RegexFilter namespacePatterns) throws IOException {
         final Set<String> namespaces = new HashSet<>();
 
         final JSONWriter jw = new JSONWriter(w);
@@ -58,7 +59,7 @@ class JSONCapabilitiesWriter {
             namespaces.add(namespace);
             
             try {
-                values = s.getCapabilities();
+                values = s.getCapabilities(resolver);
             } catch(Exception e) {
                 values = new HashMap<>();
                 values.put("_EXCEPTION_", e.getClass().getName() + ":" + e.getMessage());

@@ -23,17 +23,43 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import static org.junit.Assert.assertEquals;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /** Test the JSONCapabilitiesWriter */
 public class JSONCapabilitiesWriterTest {
 
     private final RegexFilter namespaceFilter = new RegexFilter(".*");
+    private static ResourceResolver resolver;
+    private static final String RESOLVER_STRING = "resolver-" + UUID.randomUUID();
+
+    @BeforeClass
+    public static void setupMocks() {
+        resolver = Mockito.mock(ResourceResolver.class);
+        Mockito.when(resolver.toString()).thenReturn(RESOLVER_STRING);
+    }
+
+    @Test
+    public void testResolverIsUsed() throws IOException {
+        final List<CapabilitiesSource> sources = new ArrayList<>();
+        sources.add(new MockSource("A", 2));
+
+        final StringWriter w = new StringWriter();
+        new JSONCapabilitiesWriter().writeJson(resolver, w, sources, namespaceFilter);
+        final JsonReader r = Json.createReader(new StringReader(w.toString()));
+        final JsonObject rootJson = r.readObject();
+        final JsonObject json = rootJson.getJsonObject(JSONCapabilitiesWriter.CAPS_KEY).getJsonObject("data");
+
+        assertEquals(RESOLVER_STRING, json.getJsonObject("A").getString(ResourceResolver.class.getSimpleName()));
+    }
     
     @Test
     public void testWithTwoSources() throws IOException {
@@ -42,7 +68,7 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
+        new JSONCapabilitiesWriter().writeJson(resolver, w, sources, namespaceFilter);
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
@@ -52,8 +78,8 @@ public class JSONCapabilitiesWriterTest {
         assertEquals("VALUE_0_B", json.getJsonObject("B").getString("KEY_0_B"));
         
         assertEquals("Expecting 1 root key", 1, rootJson.keySet().size());
-        assertEquals("Expecting 2 keys at A", 2, json.getJsonObject("A").keySet().size());
-        assertEquals("Expecting 1 key at B", 1, json.getJsonObject("B").keySet().size());
+        assertEquals("Expecting 3 keys at A", 3, json.getJsonObject("A").keySet().size());
+        assertEquals("Expecting 2 key at B", 2, json.getJsonObject("B").keySet().size());
     }
 
     @Test
@@ -64,7 +90,7 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("B", 1));
         
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
+        new JSONCapabilitiesWriter().writeJson(resolver, w, sources, namespaceFilter);
         
         final JsonReader r = Json.createReader(new StringReader(w.toString()));
         final JsonObject rootJson = r.readObject();
@@ -84,6 +110,6 @@ public class JSONCapabilitiesWriterTest {
         sources.add(new MockSource("duplicate", 1));
 
         final StringWriter w = new StringWriter();
-        new JSONCapabilitiesWriter().writeJson(w, sources, namespaceFilter);
+        new JSONCapabilitiesWriter().writeJson(resolver, w, sources, namespaceFilter);
     }
 }

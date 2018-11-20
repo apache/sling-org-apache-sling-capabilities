@@ -21,6 +21,7 @@ package org.apache.sling.capabilities.it;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.Servlet;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -47,8 +48,11 @@ public class CapabilitiesBundleIT extends CapabilitiesTestSupport {
     private Bundle testBundle;
 
     private static class TestCapabilitiesSource implements CapabilitiesSource {
+        @Override
         public String getNamespace() { return null; }
-        public Map<String, Object> getCapabilities() { return null; }
+
+        @Override
+        public Map<String, Object> getCapabilities(ResourceResolver unused) { return null; }
     };
 
     @Before

@@ -26,6 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.capabilities.CapabilitiesSource;
@@ -78,12 +79,14 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         
+        final Resource resource = request.getResource();
+
         // Resource Path must match a configurable set of patterns, to prevent
         // users from getting this information by just creating a resource anywhere
         // with our resource type. The idea is that those paths will have suitable
         // access control (readonly for users) to control exactly which capabilities
         // are exposed.
-        final String path = request.getResource().getPath();
+        final String path = resource.getPath();
         if(!pathFilter.accept(path)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid path " + path);
             return;
@@ -92,7 +95,7 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         // Resource must define which namespaces are exposed, also for
         // security reasons, to make sure administrators think about
         // what's exposed
-        final ValueMap m = request.getResource().adaptTo(ValueMap.class);
+        final ValueMap m = resource.adaptTo(ValueMap.class);
         final String [] namespacePatterns = m.get(NAMESPACES_PROP, String[].class);
         if(namespacePatterns == null) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing property " + NAMESPACES_PROP);
@@ -102,7 +105,7 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         // All good, get capabilities
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        new JSONCapabilitiesWriter().writeJson(response.getWriter(), sources, new RegexFilter(namespacePatterns));
+        new JSONCapabilitiesWriter().writeJson(resource.getResourceResolver(), response.getWriter(), sources, new RegexFilter(namespacePatterns));
         response.getWriter().flush();
     }
 

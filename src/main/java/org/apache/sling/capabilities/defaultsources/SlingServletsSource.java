@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.servlet.Servlet;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.capabilities.CapabilitiesSource;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -35,6 +36,10 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 /** Default CapabilitiesSource that provides information on available Sling
  *  Servlets, exposing their sling.servlet.* properties so that clients can
  *  find out which behaviors are available.
+ *
+ *  This should only be used to expose servlets to which all users have access,
+ *  generic functions such as searches etc., to avoid unwanted information
+ *  disclosure.
  */
 @Component(service = CapabilitiesSource.class)
 @Designate(
@@ -50,7 +55,9 @@ public class SlingServletsSource implements CapabilitiesSource {
     public static @interface Config {
         @AttributeDefinition(
             name = "LDAP filter",
-            description = "OSGi LDAP filter to select servlets to consider for the provided capabilites"
+            description = "OSGi LDAP filter to select servlets to consider for the provided capabilites. "
+                + "This should only expose general purpose servlets to which all users have access, like "
+                + "search functionality and similar features."
         )
         String servletsLdapFilter() default "";
         
@@ -83,7 +90,7 @@ public class SlingServletsSource implements CapabilitiesSource {
     }
 
     @Override
-    public Map<String, Object> getCapabilities() throws Exception {
+    public Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception {
         final Map<String, Object> result = new HashMap<>();
         final ServiceReference [] refs = bundleContext.getServiceReferences(Servlet.class.getName(), ldapFilter);
         if(refs != null) {

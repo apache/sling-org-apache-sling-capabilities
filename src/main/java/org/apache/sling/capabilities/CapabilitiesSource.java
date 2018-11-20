@@ -19,6 +19,7 @@
 package org.apache.sling.capabilities;
 
 import java.util.Map;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.annotation.versioning.ProviderType;
 
 /** A CapabilitiesSource provides capabilities, as a Map of key/value
@@ -35,9 +36,17 @@ public interface CapabilitiesSource {
      */
     String getNamespace();
     
-    /** @return zero to N capabilities, each being represented by
-     *      a key/value pair.
+    /** Return zero to N capabilities, each being represented by
+     *  a key/value pair.
+     *
+     *  Services implementing this interface must be careful to
+     *  avoid crossing trust boundaries. They should only expose data that
+     * is accessible to the ResourceResolver that's passed
+     *  as a parameter.
+     *
+     * @return a Map of capabilities
+     * @param resolver used to establish the user's identity
      * @throws Exception if the capabilities could not be computed.
      */
-    Map<String, Object> getCapabilities() throws Exception;
+    Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception;
 }

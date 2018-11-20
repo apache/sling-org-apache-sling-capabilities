@@ -21,25 +21,33 @@ package org.apache.sling.capabilities.internal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.capabilities.CapabilitiesSource;
 
 class MockSource implements CapabilitiesSource {
 
     private final String namespace;
-    private final Map<String, Object> props = new HashMap<>();
+    private final int propsCount;
 
     MockSource(String namespace, int propsCount) {
         this.namespace = namespace;
-        for (int i = 0; i < propsCount; i++) {
-            props.put("KEY_" + i + "_" + namespace, "VALUE_" + i + "_" + namespace);
-        }
+        this.propsCount = propsCount;
     }
 
     @Override
-    public Map<String, Object> getCapabilities() throws Exception {
+    public Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception {
         if (namespace.contains("EXCEPTION")) {
             throw new IllegalArgumentException("Simulating a problem");
         }
+        return getProps(resolver);
+    }
+
+    private Map<String, Object> getProps(ResourceResolver resolver) {
+        final Map<String, Object> props = new HashMap<>();
+        for (int i = 0; i < propsCount; i++) {
+            props.put("KEY_" + i + "_" + namespace, "VALUE_" + i + "_" + namespace);
+        }
+        props.put(ResourceResolver.class.getSimpleName(), resolver.toString());
         return Collections.unmodifiableMap(props);
     }
 
