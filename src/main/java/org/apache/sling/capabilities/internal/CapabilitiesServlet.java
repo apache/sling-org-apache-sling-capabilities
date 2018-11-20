@@ -47,30 +47,11 @@ property = {
     "sling.servlet.methods=GET",
     "sling.servlet.extensions=json"
 })
-@Designate(ocd = CapabilitiesServlet.Config.class)
 public class CapabilitiesServlet extends SlingSafeMethodsServlet {
     
-    @ObjectClassDefinition(
-        name = "Apache Sling Capabilities Servlet",
-        description = "Provides information about Sling capabilities"
-    )
-    public static @interface Config {
-        @AttributeDefinition(
-            name = "Resource Path Patterns",
-            description = "A set of (java) regular expression patterns that the resource path must match for this servlet to execute"
-        )
-        String [] resourcePathPatterns() default {};
-    }
-    
     private final List<CapabilitiesSource> sources = new CopyOnWriteArrayList<>();
-    private RegexFilter pathFilter;
     public static final String NAMESPACES_PROP = "namespace_patterns";
 
-    @Activate
-    protected void activate(Config cfg, ComponentContext ctx) {
-        pathFilter = new RegexFilter(cfg.resourcePathPatterns());
-    }
-    
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + sources.size() + " " + CapabilitiesSource.class.getSimpleName() + " active";
@@ -81,19 +62,8 @@ public class CapabilitiesServlet extends SlingSafeMethodsServlet {
         
         final Resource resource = request.getResource();
 
-        // Resource Path must match a configurable set of patterns, to prevent
-        // users from getting this information by just creating a resource anywhere
-        // with our resource type. The idea is that those paths will have suitable
-        // access control (readonly for users) to control exactly which capabilities
-        // are exposed.
-        final String path = resource.getPath();
-        if(!pathFilter.accept(path)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid path " + path);
-            return;
-        }
-        
-        // Resource must define which namespaces are exposed, also for
-        // security reasons, to make sure administrators think about
+        // Resource must define which namespaces are exposed, 
+        // to make sure administrators think about
         // what's exposed
         final ValueMap m = resource.adaptTo(ValueMap.class);
         final String [] namespacePatterns = m.get(NAMESPACES_PROP, String[].class);

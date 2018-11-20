@@ -60,22 +60,12 @@ public class CapabilitesServletTest {
     private BundleContext bundleContext;
     private ResourceResolver resourceResolver;
     
-    // The CapabilitiesServlet must reject resource paths which are outside of this
-    private static final String [] AUTHORIZED_PATHS_PATTERNS = {
-        ".*/ok$",
-        "/var/.*"
-    };
-    
     // The CapabilitiesServlet must omit capabilities outside of these namespaces
     private static final String [] NAMESPACE_PATTERNS = {
         "[EF]",
         "G"
     };
     
-    private final String DENIED_PATH = "/denied";
-    private final String OK_PATH = "/denied/but/ok";
-    private final String VAR_PATH = "/var/something";
-
     private static final CapabilitiesSource [] SOURCES = {
         new MockSource("F", 2),
         new MockSource("G", 43),
@@ -84,14 +74,6 @@ public class CapabilitesServletTest {
 
     @Before
     public void setup() throws IOException {
-        
-        // Configure allowed path patterns
-        final ConfigurationAdmin ca = context.getService(ConfigurationAdmin.class);
-        assertNotNull("Expecting a ConfigurationAdmin service", ca);
-        final Configuration cfg = ca.getConfiguration(CapabilitiesServlet.class.getName());
-        final Dictionary<String, Object> props = new Hashtable<>();
-        props.put("resourcePathPatterns", AUTHORIZED_PATHS_PATTERNS);
-        cfg.update(props);
         
         servlet = new CapabilitiesServlet();
         bundleContext = MockOsgi.newBundleContext();
@@ -107,13 +89,13 @@ public class CapabilitesServletTest {
         context.registerInjectActivateService(servlet);
     }
     
-    private MockSlingHttpServletRequest requestFor(String path, boolean withNamespacePatterns) {
+    private MockSlingHttpServletRequest testRequest(boolean withNamespacePatterns) {
         final MockSlingHttpServletRequest req = new MockSlingHttpServletRequest(resourceResolver);
         final Map<String, Object> props = new HashMap<>();
         if(withNamespacePatterns) {
             props.put(CapabilitiesServlet.NAMESPACES_PROP, NAMESPACE_PATTERNS);
         }
-        final MockResource res = new MockResource(path, props, resourceResolver);
+        final MockResource res = new MockResource("/", props, resourceResolver);
         req.setResource(res);
         return req;
     }
@@ -132,30 +114,16 @@ public class CapabilitesServletTest {
     }
 
     @Test
-    public void testDeniedPath() throws ServletException, IOException {
-        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
-        servlet.service(requestFor(DENIED_PATH, true), resp);
-        assertEquals(403, resp.getStatus());
-    }
-
-    @Test
-    public void testOkPath() throws ServletException, IOException {
-        MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
-        servlet.service(requestFor(OK_PATH, true), resp);
-        assertEquals(200, resp.getStatus());
-    }
-
-    @Test
     public void testMissingNamespaceProperty() throws ServletException, IOException {
         MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
-        servlet.service(requestFor(OK_PATH, false), resp);
+        servlet.service(testRequest(false), resp);
         assertEquals(403, resp.getStatus());
     }
 
     @Test
     public void testServletResponse() throws ServletException, IOException {
         MockSlingHttpServletResponse resp = new MockSlingHttpServletResponse();
-        servlet.service(requestFor(VAR_PATH, true), resp);
+        servlet.service(testRequest(true), resp);
         assertEquals(200, resp.getStatus());
 
         // Just verify that both sources are taken into account
