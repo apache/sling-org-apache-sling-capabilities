@@ -27,19 +27,23 @@ Services that implement the `CapabilitiesSource` interface provide capabilities.
 Each service must have its own unique namespace, used to split the capabilities in
 categories that can be provided separately (see below):
 
+
+
     @ProviderType
     public interface CapabilitiesSource {
-
-        /** @return the namespace to use to group our capabilities.
-         *  That name must be unique in a given Sling instance.
-         */
-        String getNamespace();
-
-        /** @return zero to N capabilities, each being represented by
-         *      a key/value pair.
-         * @throws Exception if the capabilities could not be computed.
-         */
-        Map<String, Object> getCapabilities() throws Exception;
+    /** Return zero to N capabilities, each being represented by
+     *  a key/value pair.
+     *
+     *  Services implementing this interface must be careful to
+     *  avoid crossing trust boundaries. They should only expose data that
+     * is accessible to the ResourceResolver that's passed
+     *  as a parameter.
+     *
+     * @return a Map of capabilities
+     * @param resolver used to establish the user's identity
+     * @throws Exception if the capabilities could not be computed.
+     */
+      Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception;
     }
     
 The sling/capabilities resource type
@@ -51,21 +55,6 @@ resource type.
 A required property named `namespace_patterns` must be present, containing 1..N Java
 regexp patterns to select which capabilities namespaces are exposed by this resource.
 
-Write access to such resources should be strictly controlled to avoid leaking unwanted
-information, along with the CapabilitiesServlet path restrictions described below.
-
-CapabilitiesServlet configuration
----------------------------------
-To restrict access to capabilities, the `CapabilitiesServlet` requires a configuration
-(see example below) that specifies which paths patterns are acceptable for `sling/capabilities` 
-resources.
-
-The idea is to strictly control write access to these paths, so that even if users can create
-`sling/capabilities` resources elsewhere they will not expose capabilities data.
-
-If the path of a `sling/capabilities` resource does not match any of the configured patterns,
-the servlet returns a 403 status code saying `Invalid path`.
-
 Example configuration
 ---------------------
 This module does not provide any active `CapabilitiesSource` out of the box, but it provides a
@@ -73,7 +62,7 @@ This module does not provide any active `CapabilitiesSource` out of the box, but
 `sling.servlet.*` properties for reference.
 
 With the example configuration below a `sling/capabilities` resource with 
-`namespace_patterns='org\.apache\.sling\.servlets\.test[A|B]'` and a path that matches `/var/capabilities/.*`
+`namespace_patterns='org\.apache\.sling\.servlets\.test[A|B]'`
 produces the following output at `/var/capabilities/caps.json` with the resource shown 
 below:
 
@@ -105,9 +94,6 @@ below:
 The configured `testC` namespace is omitted due to the `namespace_patterns` property of the resource shown below.
 
 Here's the required configuration, excerpted from `/system/console/status-Configurations`:
-
-    PID = org.apache.sling.capabilities.internal.CapabilitiesServlet
-    resourcePathPatterns = [/var/capabilities/.*]
 
 	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
 	capabilitiesNamespaceSuffix = testA
