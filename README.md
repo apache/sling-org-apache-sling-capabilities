@@ -11,10 +11,6 @@ The servlet provided by this module allows for creating Capabilities HTTP endpoi
 on a Sling instance: Resources that provide information on which services are available,
 version levels etc.
 
-To avoid exposing more information than strictly needed, this module provides two mechanisms, 
-described below, to control where resources that expose capabilities can be found in the Sling 
-resource tree, as well as which `CapabilitiesSource` services are considered by those resources.
-
 The example configuration below shows the JSON vocabulary used to expose capabilities.
 
 For now, we have one module which provides a `CapabilitiesSource`, that's the [sling-org-apache-sling-capabilities-jcr](https://github.com/apache/sling-org-apache-sling-capabilities-jcr) module which provides information on the JCR repository.
