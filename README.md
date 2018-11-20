@@ -23,23 +23,26 @@ Services that implement the `CapabilitiesSource` interface provide capabilities.
 Each service must have its own unique namespace, used to split the capabilities in
 categories that can be provided separately (see below):
 
-
-
     @ProviderType
     public interface CapabilitiesSource {
-    /** Return zero to N capabilities, each being represented by
-     *  a key/value pair.
-     *
-     *  Services implementing this interface must be careful to
-     *  avoid crossing trust boundaries. They should only expose data that
-     * is accessible to the ResourceResolver that's passed
-     *  as a parameter.
-     *
-     * @return a Map of capabilities
-     * @param resolver used to establish the user's identity
-     * @throws Exception if the capabilities could not be computed.
-     */
-      Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception;
+        /** @return the namespace to use to group our capabilities.
+         *  That name must be unique in a given Sling instance.
+         */
+        String getNamespace();
+	
+        /** Return zero to N capabilities, each being represented by
+         *  a key/value pair.
+         *
+         *  Services implementing this interface must be careful to
+         *  avoid crossing trust boundaries. They should only expose data that
+         * is accessible to the ResourceResolver that's passed
+         *  as a parameter.
+         *
+         * @return a Map of capabilities
+         * @param resolver used to establish the user's identity
+         * @throws Exception if the capabilities could not be computed.
+         */
+          Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception;
     }
     
 The sling/capabilities resource type
