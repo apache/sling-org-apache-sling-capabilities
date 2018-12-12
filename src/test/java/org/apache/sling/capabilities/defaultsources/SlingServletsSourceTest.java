@@ -19,9 +19,8 @@
 package org.apache.sling.capabilities.defaultsources;
 
 import java.io.IOException;
-import java.util.Dictionary;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.Servlet;
@@ -34,8 +33,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
 
 public class SlingServletsSourceTest {
 
@@ -59,16 +56,27 @@ public class SlingServletsSourceTest {
 
     @Before
     public void setup() throws IOException {
-        // Configure allowed path patterns
-        final ConfigurationAdmin ca = context.getService(ConfigurationAdmin.class);
-        assertNotNull("Expecting a ConfigurationAdmin service", ca);
-        final Configuration cfg = ca.getConfiguration(SlingServletsSource.class.getName());
-        final Dictionary<String, Object> props = new Hashtable<>();
-        props.put("capabilitiesNamespaceSuffix", "TEST_NS");
-        props.put("servletsLdapFilter", "(sling.servlet.extensions=json)");
-        cfg.update(props);
+        
+        final SlingServletsSource.Config cfg = new SlingServletsSource.Config() {
+            @Override
+            public String servletsLdapFilter() {
+                return "(sling.servlet.extensions=json)";
+            }
 
-        context.registerInjectActivateService(new SlingServletsSource());
+            @Override
+            public String capabilitiesNamespaceSuffix() {
+                return "TEST_NS";
+            }
+
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return SlingServletsSource.Config.class;
+            }
+        };
+
+        final SlingServletsSource src = new SlingServletsSource();
+        src.configure(cfg, context.bundleContext());
+        context.registerService(CapabilitiesSource.class, src);
 
         // Need a few (fake) Sling servlets to test
         final String [] ext = { "json", "txt", "json" };

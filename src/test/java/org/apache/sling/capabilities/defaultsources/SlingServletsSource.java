@@ -77,11 +77,15 @@ public class SlingServletsSource implements CapabilitiesSource {
     private static final String SLING_SERVLET_PROPERTY_PREFIX = "sling.servlet.";
     public static final String NAMESPACE_PREFIX = "org.apache.sling.servlets.";
     
-    @Activate
-    public void activate(Config cfg, ComponentContext ctx) {
-        this.bundleContext = ctx.getBundleContext();
+    void configure(Config cfg, BundleContext bctx) {
+        this.bundleContext = bctx;
         this.namespace = NAMESPACE_PREFIX + cfg.capabilitiesNamespaceSuffix();
         this.ldapFilter = cfg.servletsLdapFilter();
+    }
+    
+    @Activate
+    public void activate(Config cfg, ComponentContext ctx) {
+        configure(cfg, ctx.getBundleContext());
     }
 
     @Override

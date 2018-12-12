@@ -44,6 +44,8 @@ categories that can be provided separately (see below):
          */
           Map<String, Object> getCapabilities(ResourceResolver resolver) throws Exception;
     }
+
+This module does not provide any `CapabilitiesSource` service, but an example `SlingServletsSource` is provided in the test code.
     
 The sling/capabilities resource type
 ------------------------------------
@@ -54,59 +56,7 @@ resource type.
 A required property named `namespace_patterns` must be present, containing 1..N Java
 regexp patterns to select which capabilities namespaces are exposed by this resource.
 
-Example configuration
----------------------
-This module does not provide any active `CapabilitiesSource` out of the box, but it provides a
-`SlingServletsSource` that can be used to exposes which Sling servlets are active, including their
-`sling.servlet.*` properties for reference.
-
-With the example configuration below a `sling/capabilities` resource with 
-`namespace_patterns='org\.apache\.sling\.servlets\.test[A|B]'`
-produces the following output at `/var/capabilities/caps.json` with the resource shown 
-below:
-
-    {
-      "org.apache.sling.capabilities": {
-        "data": {
-          "org.apache.sling.servlets.testA": {
-            "GetAclServlet_89b2e8f3": {
-              "sling.servlet.extensions": "json",
-              "sling.servlet.methods": "GET",
-              "sling.servlet.resourceTypes": "sling/servlet/default",
-              "sling.servlet.selectors": [
-                "acl",
-                "tidy.acl"
-              ]
-            }
-          },
-          "org.apache.sling.servlets.testB": {
-            "ChangeUserPasswordServlet_458ad2ce": {
-              "sling.servlet.methods": "POST",
-              "sling.servlet.resourceTypes": "sling/user",
-              "sling.servlet.selectors": "changePassword"
-            }
-          }
-        }
-      }
-    }
-
-The configured `testC` namespace is omitted due to the `namespace_patterns` property of the resource shown below.
-
-Here's the required configuration, excerpted from `/system/console/status-Configurations`:
-
-	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-	capabilitiesNamespaceSuffix = testA
-	servletsLdapFilter = (&(sling.servlet.extensions=json)(sling.servlet.selectors=acl))    
-	
-	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-	capabilitiesNamespaceSuffix = testB
-	servletsLdapFilter = (&(sling.servlet.resourceTypes=sling/user)(sling.servlet.selectors=changePassword))
-
-	Factory PID = org.apache.sling.capabilities.defaultsources.SlingServletsSource
-	capabilitiesNamespaceSuffix = testC
-	servletsLdapFilter = (sling.servlet.extensions=html)
-
-And a resource that then generates the above output can be created with
+As an example, a resource that causes capabilities with the `org\.apache\.sling\.servlets\.test[A|B]` namespace regexp to be output (assuming a `CapabilitiesSource` that provides them is available) can be created as follows:
 
     curl -u admin:admin \
       -Fsling:resourceType=sling/capabilities \
