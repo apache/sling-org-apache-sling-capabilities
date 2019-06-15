@@ -24,6 +24,7 @@ import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 
 import static org.apache.sling.testing.paxexam.SlingOptions.logback;
+import static org.apache.sling.testing.paxexam.SlingOptions.scr;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
@@ -39,7 +40,7 @@ public abstract class CapabilitiesTestSupport extends TestSupport {
             baseConfiguration(),
             
             mavenBundle().groupId("org.apache.felix").artifactId("org.apache.felix.http.servlet-api").version("1.1.2"),
-            mavenBundle().groupId("org.apache.felix").artifactId("org.apache.felix.scr").version("2.0.2"),
+            scr(),
             mavenBundle().groupId("org.apache.sling").artifactId("org.apache.sling.api").version("2.11.0"),
                 
             // This bundle
