@@ -27,6 +27,7 @@ import static org.apache.sling.testing.paxexam.SlingOptions.logback;
 import static org.apache.sling.testing.paxexam.SlingOptions.scr;
 import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.options;
 
 public abstract class CapabilitiesTestSupport extends TestSupport {
 
@@ -36,7 +37,7 @@ public abstract class CapabilitiesTestSupport extends TestSupport {
         // compatible with older Sling versions.
         SlingOptions.versionResolver.setVersion("slf4j", "slf4j-api", "1.7.6");
                 
-        return new Option[]{
+        return options(
             baseConfiguration(),
             
             mavenBundle().groupId("org.apache.felix").artifactId("org.apache.felix.http.servlet-api").version("1.1.2"),
@@ -49,6 +50,6 @@ public abstract class CapabilitiesTestSupport extends TestSupport {
             // Test stuff
             junitBundles(),
             logback()
-        };
+        );
     }
 }
