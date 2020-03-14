@@ -48,8 +48,7 @@ public abstract class CapabilitiesTestSupport extends TestSupport {
             testBundle("bundle.filename"),
             
             // Test stuff
-            junitBundles(),
-            logback()
+            junitBundles()
         );
     }
 }
